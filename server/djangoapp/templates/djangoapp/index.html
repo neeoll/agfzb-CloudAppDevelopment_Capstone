@@ -18,10 +18,30 @@
     <nav class="navbar navbar-light bg-light">
         <div class="container-fluid">
             <div class="navbar-header">
-                  <a class="navbar-brand" href="#">Online Course</a>
+                  <a class="navbar-brand" href="{% url 'djangoapp:index' %}">Dealership Review</a>
                   <a class="navbar-brand" href="{% url 'djangoapp:about' %}">About</a>
                   <a class="navbar-brand" href="{% url 'djangoapp:contact' %}">Contact Us</a>
             </div>
+            <ul class="nav navbar-nav navbar-right">
+                {% if user.is_authenticated %}
+                <li>
+                    <a href="#">{{ user.username }}</a>
+                    <a href="{% url 'djangoapp:logout' %}" class="btn btn-outline-primary">Logout</a>
+                </li>
+                {% else %}
+                <li>
+                    <form class="form-inline" action="{% url 'djangoapp:login' %}" method="post">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Username" name="username" required></input>
+                            <input type="password" class="form-control" placeholder="Password" name="password" required></input>
+                            <button type="submit" class="btn btn-primary">Log in</button>
+                            <a class="btn btn-link">Sign Up</button>
+                        </div>
+                    </form> 
+                </li>
+                {% endif %}
+            </ul>
         </div>
     </nav>
     <!--Add a dealer table here -->
