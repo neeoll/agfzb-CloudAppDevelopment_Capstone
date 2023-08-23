@@ -10,7 +10,10 @@ from requests.auth import HTTPBasicAuth
 def get_request(url, **kwargs):
     print("GET from {} ".format(url))
     try:
-        response = requests.get(url, headers={'Content-Type': 'application/json'}, params=kwargs)
+        if (api_key):
+            response = requests.get(url, headers={'Content-Type': 'application/json'}, params=kwargs, auth=HTTPBasicAuth('apikey', api_key))
+        else:
+            response = requests.get(url, headers={'Content-Type': 'application/json'}, params=kwargs)
     except:
         print("Network exception occurred")
 
@@ -57,8 +60,9 @@ def get_dealer_reviews_from_cf(url, **kwargs):
     results = []
     json_result = get_request(url)
     if json_result:
-        reviews = json_result["docs"]
+        reviews = json_result["reviews"]
         for review in reviews:
+            print(review)
             review_obj = DealerReview(
                 dealership=review["dealership"],
                 name=review["name"],
@@ -68,9 +72,9 @@ def get_dealer_reviews_from_cf(url, **kwargs):
                 car_make=review["car_make"],
                 car_model=review["car_model"],
                 car_year=review["car_year"],
-                sentiment=review["sentiment"],
                 id=review["id"]
             )
+            review_obj.sentiment = analyze_review_sentiments(review_obj.review)
             results.append(review_obj)
     return results
             
@@ -79,3 +83,10 @@ def get_dealer_reviews_from_cf(url, **kwargs):
 # def analyze_review_sentiments(text):
 # - Call get_request() with specified arguments
 # - Get the returned sentiment label such as Positive or Negative
+def analyze_review_sentiments(dealerreview):
+    params = dict()
+    params["text"] = kwargs["text"]
+    params["version"] = kwargs["version"]
+    params["features"] = kwargs["features"]
+    params["return_analyzed_text"] = kwargs["return_analyzed_text"]
+    response = requests.get(url, params=params, headers={'Content-Type': 'application/json'}, auth=HTTPBasicAuth('apikey', api_key))
