@@ -58,6 +58,7 @@ def get_dealers_from_cf(url, **kwargs):
                 long=dealer_doc["long"],
                 short_name=dealer_doc["short_name"],
                 st=dealer_doc["st"], 
+                state=dealer_doc["state"],
                 zip=dealer_doc["zip"]
             )
             results.append(dealer_obj)
