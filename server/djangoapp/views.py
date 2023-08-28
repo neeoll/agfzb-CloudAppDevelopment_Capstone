@@ -9,7 +9,7 @@ from django.contrib import messages
 from datetime import datetime
 import logging
 import json
-from .restapis import get_dealers_from_cf, get_dealer_reviews_from_cf
+from .restapis import post_request, get_dealers_from_cf, get_dealer_reviews_from_cf
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -106,11 +106,36 @@ def get_dealerships(request):
 def get_dealer_details(request, dealer_id):
     if (request.method == "GET"):
         url = f"https://us-south.functions.appdomain.cloud/api/v1/web/846eb439-3586-4d7d-82bd-3f206faf52b5/reviews/get-reviews.json?dealerId={dealer_id}"
-        details = get_dealer_reviews_from_cf(url)
-        review_names = ' '.join([review["name"] for review in details])
-        return HttpResponse(details)
+        reviews = get_dealer_reviews_from_cf(url)
+        review_names = ' '.join([f"{review.name}: {review.sentiment['sentiment']['document']['label']}" for review in reviews])
+        return HttpResponse(review_names)
 
 # Create a `add_review` view to submit a review
 # def add_review(request, dealer_id):
 # ...
+def add_review(request, dealer_id):
+    if (request.user.is_authenticated):
+        print("user is authenticated, continue")
+        
+        print("review dictionary creation")
+        review = {}
+        review["name"] = "Upkar Lidder"
+        review["dealership"] = dealer_id
+        review["review"] = "Great service!"
+        review["purchase"] = False
+        review["purchase_date"] = datetime.utcnow().isoformat()
+        review["car_make"] = "Audi"
+        review["car_model"] = "Car"
+        review["car_year"] = 2021
+        
+        print("json payload creation")
+        json_payload = {}
+        json_payload["review"] = review
 
+        print("calling post_request")
+        post_request(
+            url="https://us-south.functions.appdomain.cloud/api/v1/web/846eb439-3586-4d7d-82bd-3f206faf52b5/reviews/post-review",
+            json_payload=json_payload
+        )
+    else:
+        print("user isn't authenticated")

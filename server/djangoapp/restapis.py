@@ -7,24 +7,35 @@ from requests.auth import HTTPBasicAuth
 # Create a `get_request` to make HTTP GET requests
 # e.g., response = requests.get(url, params=params, headers={'Content-Type': 'application/json'},
 #                                     auth=HTTPBasicAuth('apikey', api_key))
-def get_request(url, **kwargs):
-    print("GET from {} ".format(url))
+def get_request(url, api_key=None, **kwargs):
+    print("GET from {}".format(url))
     try:
-        if (api_key):
+        if api_key:
             response = requests.get(url, headers={'Content-Type': 'application/json'}, params=kwargs, auth=HTTPBasicAuth('apikey', api_key))
         else:
             response = requests.get(url, headers={'Content-Type': 'application/json'}, params=kwargs)
-    except:
-        print("Network exception occurred")
+    except requests.exceptions.RequestException as e:
+        print("Network exception occurred:", e)
+        return None
 
     status_code = response.status_code
     print("With status {}".format(status_code))
-    json_data = json.loads(response.content)
-    print(json_data)
+    
+    json_data = None
+    if response.content:
+        json_data = json.loads(response.content)
+    
     return json_data
 
 # Create a `post_request` to make HTTP POST requests
 # e.g., response = requests.post(url, params=kwargs, json=payload)
+def post_request(url, json_payload, **kwargs):
+    try:
+        requests.post(url, params=kwargs, json=json_payload)
+    except requests.exceptions.RequestException as e:
+        print("Network exception occurred:", e)
+        return {"error": "Network exception"}
+
 
 
 # Create a get_dealers_from_cf method to get dealers from a cloud function
@@ -62,7 +73,6 @@ def get_dealer_reviews_from_cf(url, **kwargs):
     if json_result:
         reviews = json_result["reviews"]
         for review in reviews:
-            print(review)
             review_obj = DealerReview(
                 dealership=review["dealership"],
                 name=review["name"],
@@ -72,9 +82,9 @@ def get_dealer_reviews_from_cf(url, **kwargs):
                 car_make=review["car_make"],
                 car_model=review["car_model"],
                 car_year=review["car_year"],
+                sentiment=analyze_text_with_watson_nlu(review["review"]),
                 id=review["id"]
             )
-            review_obj.sentiment = analyze_review_sentiments(review_obj.review)
             results.append(review_obj)
     return results
             
@@ -83,10 +93,24 @@ def get_dealer_reviews_from_cf(url, **kwargs):
 # def analyze_review_sentiments(text):
 # - Call get_request() with specified arguments
 # - Get the returned sentiment label such as Positive or Negative
-def analyze_review_sentiments(dealerreview):
-    params = dict()
-    params["text"] = kwargs["text"]
-    params["version"] = kwargs["version"]
-    params["features"] = kwargs["features"]
-    params["return_analyzed_text"] = kwargs["return_analyzed_text"]
-    response = requests.get(url, params=params, headers={'Content-Type': 'application/json'}, auth=HTTPBasicAuth('apikey', api_key))
+def analyze_text_with_watson_nlu(text):
+    try:
+        headers = { "Content-Type": "application/json" }
+        data = {
+            "text": text,
+            "features": { "sentiment": {} }
+        }
+
+        response = requests.post(
+            "https://api.au-syd.natural-language-understanding.watson.cloud.ibm.com/instances/b7725bcb-3690-4e71-ad16-52f1fd9f53b6" + "/v1/analyze?version=2019-07-12",
+            headers=headers,
+            json=data,
+            auth=(f"apikey", "w8nZAv0WMpjUbQ7Dx-qXYLgdnikLsNhySiXfck2o3IKP")
+        )
+
+        response_json = response.json()
+        return response_json
+
+    except requests.exceptions.RequestException as e:
+        print("Network exception occurred:", e)
+        return {"error": "Network exception"}
