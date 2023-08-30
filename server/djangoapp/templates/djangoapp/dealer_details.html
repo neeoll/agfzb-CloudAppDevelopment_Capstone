@@ -19,12 +19,14 @@
             </div>
             <ul class="nav navbar-nav navbar-right">
                 {% if user.is_authenticated %}
-                <li>
-                    <a href="{% url 'djangoapp:add_review' %}" class="btn btn-outline-primary" method="get">Leave a Review</a>
-                </li>
-                <li>
-                    <a href="#">{{ user.username }}</a>
-                    <a href="{% url 'djangoapp:logout' %}" class="btn btn-outline-primary">Logout</a>
+                <li class="d-flex flex-row align-items-center">
+                    <div class="mr-5">
+                        <a href="{% url 'djangoapp:add_review' dealer_id">Leave a Review</a>
+                    </div>
+                    <div>
+                        <a href="#">{{ user.username }}</a>
+                        <a href="{% url 'djangoapp:logout' %}" class="btn btn-outline-primary">Logout</a>
+                    </div>
                 </li>
                 {% else %}
                 <li>
@@ -43,7 +45,20 @@
         </div>
     </nav>
     <!-- Add reviews as cards -->
-
+    <h1>Reviews for </h1>
+    <div class="card-columns">
+    {% for review in reviews %}
+        <div class="card">
+            <img class="card-img-left" width="50" height="50" src="{{MEDIA_URL}}/emoji/{{review.sentiment}}.png"></img>
+            <label class="card-title ml-2">{{review.name}}</label>
+            <div class="card-body">
+                <label class="card-title">{{review.car_make}}, {{review.car_model}}</label>
+                <label class="card-title">{{review.car_year}}</label>
+                <label class="card-title">{{review.review}}</label>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
     </body>
 
 </html>

@@ -111,6 +111,7 @@ def get_dealer_details(request, dealer_id):
         reviews = get_dealer_reviews_from_cf(url)
         # review_names = ' '.join([f"{review.name}: {review.sentiment['sentiment']['document']['label']}" for review in reviews])
         context["reviews"] = reviews
+        context["dealer_id"] = dealer_id
         return render(request, 'djangoapp/dealer_details.html', context)
 
 # Create a `add_review` view to submit a review

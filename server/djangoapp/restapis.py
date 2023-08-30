@@ -110,7 +110,7 @@ def analyze_text_with_watson_nlu(text):
         )
 
         response_json = response.json()
-        return response_json
+        return response_json['sentiment']['document']['label']
 
     except requests.exceptions.RequestException as e:
         print("Network exception occurred:", e)
