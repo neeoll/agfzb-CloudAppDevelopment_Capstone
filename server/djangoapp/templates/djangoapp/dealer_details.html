@@ -21,7 +21,7 @@
                 {% if user.is_authenticated %}
                 <li class="d-flex flex-row align-items-center">
                     <div class="mr-5">
-                        <a href="{% url 'djangoapp:add_review' dealer_id">Leave a Review</a>
+                        <a href="{% url 'djangoapp:add_review' dealer_id %}">Leave a Review</a>
                     </div>
                     <div>
                         <a href="#">{{ user.username }}</a>

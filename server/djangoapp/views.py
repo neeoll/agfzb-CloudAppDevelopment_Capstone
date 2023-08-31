@@ -118,28 +118,32 @@ def get_dealer_details(request, dealer_id):
 # def add_review(request, dealer_id):
 # ...
 def add_review(request, dealer_id):
-    if (request.user.is_authenticated):
-        print("user is authenticated, continue")
-        
-        print("review dictionary creation")
-        review = {}
-        review["name"] = "Upkar Lidder"
-        review["dealership"] = dealer_id
-        review["review"] = "Great service!"
-        review["purchase"] = False
-        review["purchase_date"] = datetime.utcnow().isoformat()
-        review["car_make"] = "Audi"
-        review["car_model"] = "Car"
-        review["car_year"] = 2021
-        
-        print("json payload creation")
-        json_payload = {}
-        json_payload["review"] = review
+    if (request.method == "GET"):
+        context = {}
+        return render(request, 'djangoapp/add_review.html', context)
+    elif (request.method == "POST"):
+        if (request.user.is_authenticated):
+            print("user is authenticated, continue")
+            
+            print("review dictionary creation")
+            review = {}
+            review["name"] = "Upkar Lidder"
+            review["dealership"] = dealer_id
+            review["review"] = "Great service!"
+            review["purchase"] = False
+            review["purchase_date"] = datetime.utcnow().isoformat()
+            review["car_make"] = "Audi"
+            review["car_model"] = "Car"
+            review["car_year"] = 2021
+            
+            print("json payload creation")
+            json_payload = {}
+            json_payload["review"] = review
 
-        print("calling post_request")
-        post_request(
-            url="https://us-south.functions.appdomain.cloud/api/v1/web/846eb439-3586-4d7d-82bd-3f206faf52b5/reviews/post-review",
-            json_payload=json_payload
-        )
-    else:
-        print("user isn't authenticated")
+            print("calling post_request")
+            post_request(
+                url="https://us-south.functions.appdomain.cloud/api/v1/web/846eb439-3586-4d7d-82bd-3f206faf52b5/reviews/post-review",
+                json_payload=json_payload
+            )
+        else:
+            print("user isn't authenticated")
