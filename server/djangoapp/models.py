@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.timezone import now
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 # Create your models here.
@@ -33,12 +34,15 @@ class CarModel(models.Model):
     type = models.CharField(choices=[
         ("Sedan", "Sedan"), 
         ("SUV", "SUV"), 
-        ("Wagon", "Wagon")
+        ("Wagon", "Wagon"),
+        ("Coupe", "Coupe"),
+        ("Sport", "Sport"),
+        ("Truck", "Truck")
     ], max_length=30)
-    year = models.DateField()
+    year = models.IntegerField(validators=[MinValueValidator(1970), MaxValueValidator(2023)])
 
     def __str__(self):
-        return self.make
+        return self.name
 
 
 # <HINT> Create a plain Python class `CarDealer` to hold dealer data

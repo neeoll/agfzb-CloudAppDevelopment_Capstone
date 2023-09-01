@@ -10,6 +10,7 @@ from datetime import datetime
 import logging
 import json
 from .restapis import post_request, get_dealers_from_cf, get_dealer_reviews_from_cf
+from .models import CarModel
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -109,7 +110,6 @@ def get_dealer_details(request, dealer_id):
         context = {}
         url = f"https://us-south.functions.appdomain.cloud/api/v1/web/846eb439-3586-4d7d-82bd-3f206faf52b5/reviews/get-reviews.json?dealerId={dealer_id}"
         reviews = get_dealer_reviews_from_cf(url)
-        # review_names = ' '.join([f"{review.name}: {review.sentiment['sentiment']['document']['label']}" for review in reviews])
         context["reviews"] = reviews
         context["dealer_id"] = dealer_id
         return render(request, 'djangoapp/dealer_details.html', context)
@@ -120,6 +120,9 @@ def get_dealer_details(request, dealer_id):
 def add_review(request, dealer_id):
     if (request.method == "GET"):
         context = {}
+        context["dealer_id"] = dealer_id
+        context["cars"] = CarModel.objects.all()
+        print(CarModel.objects.all())
         return render(request, 'djangoapp/add_review.html', context)
     elif (request.method == "POST"):
         if (request.user.is_authenticated):
@@ -145,5 +148,6 @@ def add_review(request, dealer_id):
                 url="https://us-south.functions.appdomain.cloud/api/v1/web/846eb439-3586-4d7d-82bd-3f206faf52b5/reviews/post-review",
                 json_payload=json_payload
             )
+            return HttpResponseRedirect(reverse(viewname="djangoapp:dealer_details", args=(dealer_id)))
         else:
             print("user isn't authenticated")
