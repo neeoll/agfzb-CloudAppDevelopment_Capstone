@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render, redirect
+from django.urls import reverse
 # from .models import related models
 # from .restapis import related methods
 from django.contrib.auth import login, logout, authenticate
@@ -126,28 +127,30 @@ def add_review(request, dealer_id):
         return render(request, 'djangoapp/add_review.html', context)
     elif (request.method == "POST"):
         if (request.user.is_authenticated):
-            print("user is authenticated, continue")
             
-            print("review dictionary creation")
             review = {}
-            review["name"] = "Upkar Lidder"
+            review["name"] = request.user.username
             review["dealership"] = dealer_id
-            review["review"] = "Great service!"
-            review["purchase"] = False
-            review["purchase_date"] = datetime.utcnow().isoformat()
+            review["review"] = request.POST["content"]
+            review["purchase"] = request.POST["purchasecheck"] == 'on'
+            review["purchase_date"] = request.POST['purchasedate'] or datetime.utcnow().isoformat()
             review["car_make"] = "Audi"
             review["car_model"] = "Car"
             review["car_year"] = 2021
             
-            print("json payload creation")
+            
             json_payload = {}
             json_payload["review"] = review
 
             print("calling post_request")
-            post_request(
-                url="https://us-south.functions.appdomain.cloud/api/v1/web/846eb439-3586-4d7d-82bd-3f206faf52b5/reviews/post-review",
-                json_payload=json_payload
-            )
-            return HttpResponseRedirect(reverse(viewname="djangoapp:dealer_details", args=(dealer_id)))
+            try:
+                response = post_request(
+                    url="https://us-south.functions.appdomain.cloud/api/v1/web/846eb439-3586-4d7d-82bd-3f206faf52b5/reviews/post-review",
+                    json_payload=json_payload
+                )
+                print(response)
+                return HttpResponseRedirect(reverse(viewname="djangoapp:dealer_details", args=(dealer_id,)))
+            except:
+                print("some error occurred")
         else:
             print("user isn't authenticated")
